@@ -30,12 +30,6 @@ app.get('/api/persons', (req, res) => {
     res.json(persons)
 })
 
-app.post('/api/notes', (request, response) => {
-    const persons = request.body
-    console.log(persons)
-    response.json(persons)
-  }) 
-
 
 const PORT = 3001
 app.listen(PORT, () => {
