@@ -3,3 +3,5 @@ Dockerfile
 .dockerignore
 node_modules
 .git
+mongodb+srv://tekisihme:Eevionparas@cluster0.tcqgyj5.mongodb.net/PhonebookApp?retryWrites=true&w=majority
+fly secrets set MONGODB_URI='mongodb+srv://tekisihme:Eevionparas@cluster0.tcqgyj5.mongodb.net/PhonebookApp?retryWrites=true&w=majority'
