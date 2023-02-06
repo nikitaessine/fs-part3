@@ -1,39 +1,16 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
-const mongoose = require('mongoose')
-require('dotenv').config()
 const Person = require('./models/person')
 
+app.use(express.static('build'))
 app.use(express.json())
 morgan.token('body', (req, res) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 app.use(cors())
-app.use(express.static('build'))
 
-let persons = [
-  {
-    id: 1,
-    content: "Arto Hellas",
-    number: "040-123456"
-  },
-  {
-    id: 2,
-    content: "Ada Lovelace",
-    number: "39-44-5325252"
-  },
-  {
-    id: 3,
-    content: "Dan Abramov",
-    number: "12-34-4554545"
-  },
-  {
-    id: 4,
-    content: "Mary Poppendick",
-    number: "044-03803830"
-  }
-]
 
 const generateId = () => {
   const maxId = persons.length > 0
@@ -48,7 +25,7 @@ app.get('/api/persons', (req, res) => {
   })
 })
 
-app.get('/info', (req,res) => {
+app.get('/info', (req,res, next) => {
   count = persons.length
   res.send(
     `
@@ -58,21 +35,28 @@ app.get('/info', (req,res) => {
     <p>${Date(Date.now)}</p>
     `
   )
+  .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id).then(person => {
-    res.json(person)
+    if(person){
+      res.json(person)
+    } else {
+      res.status(404).end()
+    }
   })
+  .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id).then(() => {
   res.status(204).end()
 })
+.catch(error => next(error))
 })
 
-app.post('/api/persons', (req,res) => {
+app.post('/api/persons', (req,res, next) => {
   const body = req.body
 
   if (!body.content){
@@ -103,6 +87,23 @@ app.post('/api/persons', (req,res) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
+  .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+  console.log('putissa bäkki')
+  const body = req.body
+
+  const person = {
+    content: body.content,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then((upd) => {
+      res.json(upd)
+    })
+    .catch((error) => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
@@ -110,6 +111,19 @@ const unknownEndpoint = (request, response) => {
 }
 
 app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
