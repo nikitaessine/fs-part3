@@ -1,13 +1,12 @@
-# fly.toml file generated for fs-part3 on 2023-01-30T14:11:43+02:00
+# fly.toml file generated for fspart3 on 2023-02-06T12:17:36+02:00
 
-app = "fs-part3"
+app = "fspart3"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
 [env]
-  PORT = "8080" 
-
+  PORT = "8080" # lisätään tämä
 [experimental]
   auto_rollback = true
 
