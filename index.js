@@ -12,13 +12,6 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 app.use(cors())
 
 
-const generateId = () => {
-  const maxId = persons.length > 0
-    ? Math.max(...persons.map(n => n.id))
-    : 0
-  return maxId + 1
-}
-
 app.get('/api/persons', (req, res) => {
   Person.find({}).then(persons => {
     res.json(persons)
@@ -69,19 +62,9 @@ app.post('/api/persons', (req,res, next) => {
     })
   }
 
-  const name = body.content
-  const found = persons.find(person => person.content === name)
-
-  if(found){
-    return res.status(400).json({
-      error: 'name must be unique'
-    })
-  }
-
   const person = new Person({
     content: body.content,
     number: body.number,
-    id: generateId() 
   })
 
   person.save().then(savedPerson => {
