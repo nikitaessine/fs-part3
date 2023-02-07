@@ -7,7 +7,7 @@ const Person = require('./models/person')
 
 app.use(express.static('build'))
 app.use(express.json())
-morgan.token('body', (req, res) => JSON.stringify(req.body))
+morgan.token('body', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 app.use(cors())
 
@@ -19,16 +19,13 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/info', (req,res, next) => {
-  count = persons.length
-  res.send(
-    `
-    <p>
-      Phonebook has info for ${count} people
-    </p>
-    <p>${Date(Date.now)}</p>
-    `
-  )
-  .catch(error => next(error))
+
+  Person.find({})
+    .then(persons => {
+      res.send(`<p>Phonebook has info for ${persons.length} people</p>
+        <p>${new Date}</p>`)
+    })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
@@ -39,14 +36,14 @@ app.get('/api/persons/:id', (req, res, next) => {
       res.status(404).end()
     }
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id).then(() => {
-  res.status(204).end()
-})
-.catch(error => next(error))
+    res.status(204).end()
+  })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (req,res, next) => {
@@ -70,14 +67,14 @@ app.post('/api/persons', (req,res, next) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
   console.log('putissa bäkki')
-  const {content, number} = req.body
+  const { content, number } = req.body
 
-  Person.findByIdAndUpdate(req.params.id, {content, number}, 
+  Person.findByIdAndUpdate(req.params.id, { content, number },
     { new: true, runValidators:true, context: 'query' })
     .then((upd) => {
       res.json(upd)
@@ -86,7 +83,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 })
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" })
+  response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
